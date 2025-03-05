@@ -878,7 +878,7 @@ if not st.session_state.show_report:
 
         # Report anzeigen
         st.session_state.show_report = True
-        st.experimental_rerun()
+        st.rerun()
 
 # Report anzeigen
 if st.session_state.show_report:
@@ -915,7 +915,7 @@ if st.session_state.show_report:
 
     if st.button("Weiter"):
         st.session_state.show_report = False
-        st.experimental_rerun()
+        st.rerun()
 else:
     # Tab-Inhalte basierend auf Auswahl
     if st.session_state.current_tab == "Übersicht":
