@@ -848,7 +848,12 @@ st.title("🚲 Fahrrad-Geschäftssimulation")
 
 # Seitennavigation
 tabs = ["Übersicht", "Einkauf", "Lager", "Personal", "Produktion", "Absatzmarkt", "Berichte", "Hilfe"]
-st.session_state.current_tab = st.sidebar.radio("Navigation", tabs, index=tabs.index(st.session_state.current_tab))
+current_tab = st.sidebar.radio("Navigation", tabs)
+
+# Update session state and force rerun if needed
+if 'current_tab' not in st.session_state or st.session_state.current_tab != current_tab:
+    st.session_state.current_tab = current_tab
+    st.rerun()
 
 # Simulation abrufen
 sim = st.session_state.simulation
