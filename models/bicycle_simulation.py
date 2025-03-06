@@ -6,26 +6,26 @@ class BicycleSimulation:
     def __init__(self):
         # Initialize simulation
         self.current_month = 1
-        self.balance = 70000  # Starting balance: 70,000€
+        self.balance = 80000  # Starting balance: 80,000€
 
         # Inventory
         self.inventory_germany = {
-            'laufradsatz_alpin': 10,
-            'laufradsatz_ampere': 10,
-            'laufradsatz_speed': 10,
-            'laufradsatz_standard': 10,
-            'rahmen_herren': 10,
-            'rahmen_damen': 10,
-            'rahmen_mountain': 10,
-            'rahmen_renn': 10,
-            'lenker_comfort': 10,
-            'lenker_sport': 10,
-            'sattel_comfort': 10,
-            'sattel_sport': 10,
-            'schaltung_albatross': 10,
-            'schaltung_gepard': 10,
-            'motor_standard': 10,
-            'motor_mountain': 10,
+            'laufradsatz_alpin': 15,
+            'laufradsatz_ampere': 15,
+            'laufradsatz_speed': 15,
+            'laufradsatz_standard': 15,
+            'rahmen_herren': 15,
+            'rahmen_damen': 15,
+            'rahmen_mountain': 15,
+            'rahmen_renn': 15,
+            'lenker_comfort': 15,
+            'lenker_sport': 15,
+            'sattel_comfort': 15,
+            'sattel_sport': 15,
+            'schaltung_albatross': 15,
+            'schaltung_gepard': 15,
+            'motor_standard': 15,
+            'motor_mountain': 15,
             'damenrad': 0,
             'e_bike': 0,
             'e_mountainbike': 0,
@@ -38,7 +38,7 @@ class BicycleSimulation:
 
         # Staff
         self.skilled_workers = 1
-        self.unskilled_workers = 1
+        self.unskilled_workers = 2
 
         # Statistics
         self.expenses = []
@@ -84,7 +84,7 @@ class BicycleSimulation:
             'schaltung_gepard': 0.001
         }
 
-        # Market information
+        # Markt-Informationen
         self.markets = {
             'muenster': {
                 'preference': {
@@ -109,9 +109,9 @@ class BicycleSimulation:
                     'herrenrad': 0.05,
                     'damenrad': 0.05,
                     'e_bike': 0.1,
-                    'e_mountainbike': 0.3,
-                    'mountainbike': 0.2,
-                    'rennrad': 0.3
+                    'e_mountainbike': 0.25,  # vorher 0.2
+                    'mountainbike': 0.3,  # vorher 0.2
+                    'rennrad': 0.35  # vorher 0.3
                 },
                 'bicycles': {
                     'damenrad': 0,
@@ -124,26 +124,26 @@ class BicycleSimulation:
             }
         }
 
-        # Prices for sold bicycles
+        # Preise für verkaufte Fahrräder
         self.bicycle_prices = {
-            'damenrad': 550,
-            'e_bike': 1200,
-            'e_mountainbike': 1500,
-            'herrenrad': 550,
-            'mountainbike': 850,
-            'rennrad': 900
+            'damenrad': 620,  # vorher 550
+            'e_bike': 1250,  # vorher 1200
+            'e_mountainbike': 1550,  # vorher 1500
+            'herrenrad': 620,  # vorher 550
+            'mountainbike': 820,  # vorher 850
+            'rennrad': 890  # vorher 900
         }
 
         # Salaries for workers (monthly)
         self.worker_salaries = {
-            'skilled': 3500,
-            'unskilled': 2000
+            'skilled': 22 * 150,
+            'unskilled': 13 * 150
         }
 
         # Storage rent (every 3 months)
         self.storage_rent = {
-            'germany': 500,
-            'france': 250
+            'germany': 4500,
+            'france': 2250
         }
 
     def purchase_materials(self, order):
