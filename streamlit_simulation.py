@@ -19,26 +19,26 @@ class BicycleSimulation:
     def __init__(self):
         # Initialisierung der Simulation
         self.current_month = 1
-        self.balance = 70000  # Startguthaben: 70.000€
+        self.balance = 80000  # Startguthaben: 80.000€
 
         # Lagerbestände
         self.inventory_germany = {
-            'laufradsatz_alpin': 10,
-            'laufradsatz_ampere': 10,
-            'laufradsatz_speed': 10,
-            'laufradsatz_standard': 10,
-            'rahmen_herren': 10,
-            'rahmen_damen': 10,
-            'rahmen_mountain': 10,
-            'rahmen_renn': 10,
-            'lenker_comfort': 10,
-            'lenker_sport': 10,
-            'sattel_comfort': 10,
-            'sattel_sport': 10,
-            'schaltung_albatross': 10,
-            'schaltung_gepard': 10,
-            'motor_standard': 10,
-            'motor_mountain': 10,
+            'laufradsatz_alpin': 15,  # vorher 10
+            'laufradsatz_ampere': 15,  # vorher 10
+            'laufradsatz_speed': 15,  # vorher 10
+            'laufradsatz_standard': 15,  # vorher 10
+            'rahmen_herren': 15,  # vorher 10
+            'rahmen_damen': 15,  # vorher 10
+            'rahmen_mountain': 15,  # vorher 10
+            'rahmen_renn': 15,  # vorher 10
+            'lenker_comfort': 15,  # vorher 10
+            'lenker_sport': 15,  # vorher 10
+            'sattel_comfort': 15,  # vorher 10
+            'sattel_sport': 15,  # vorher 10
+            'schaltung_albatross': 15,  # vorher 10
+            'schaltung_gepard': 15,  # vorher 10
+            'motor_standard': 15,  # vorher 10
+            'motor_mountain': 15,  # vorher 10
             'damenrad': 0,
             'e_bike': 0,
             'e_mountainbike': 0,
@@ -51,7 +51,7 @@ class BicycleSimulation:
 
         # Personal
         self.skilled_workers = 1
-        self.unskilled_workers = 1
+        self.unskilled_workers = 2
 
         # Statistiken
         self.expenses = []
@@ -122,9 +122,9 @@ class BicycleSimulation:
                     'herrenrad': 0.05,
                     'damenrad': 0.05,
                     'e_bike': 0.1,
-                    'e_mountainbike': 0.3,
-                    'mountainbike': 0.2,
-                    'rennrad': 0.3
+                    'e_mountainbike': 0.25,
+                    'mountainbike': 0.3,
+                    'rennrad': 0.35
                 },
                 'bicycles': {
                     'damenrad': 0,
@@ -139,24 +139,24 @@ class BicycleSimulation:
 
         # Preise für verkaufte Fahrräder
         self.bicycle_prices = {
-            'damenrad': 550,
-            'e_bike': 1200,
-            'e_mountainbike': 1500,
-            'herrenrad': 550,
-            'mountainbike': 850,
-            'rennrad': 900
+            'damenrad': 620,
+            'e_bike': 1250,
+            'e_mountainbike': 1550,
+            'herrenrad': 620,
+            'mountainbike': 820,
+            'rennrad': 890
         }
 
         # Löhne für Arbeiter (monatlich)
         self.worker_salaries = {
-            'skilled': 3500,
-            'unskilled': 2000
+            'skilled': 22*150,
+            'unskilled': 13 * 150
         }
 
         # Lagermieten (alle 3 Monate)
         self.storage_rent = {
-            'germany': 500,
-            'france': 250
+            'germany': 4500,
+            'france': 2250
         }
 
     def initialize_suppliers(self):
@@ -165,17 +165,17 @@ class BicycleSimulation:
             'velotech_supplies': {
                 'payment_term': 30,  # Tage
                 'delivery_time': 30,  # Tage
-                'complaint_probability': 0.095,
-                'complaint_percentage': 0.18,
+                'complaint_probability': 0.08,  # vorher 0.095
+                'complaint_percentage': 0.15,  # vorher 0.18
                 'products': {
-                    'laufradsatz_alpin': 180,
-                    'laufradsatz_ampere': 220,
-                    'laufradsatz_speed': 250,
-                    'laufradsatz_standard': 150,
-                    'rahmen_herren': 104,
-                    'rahmen_damen': 107,
-                    'rahmen_mountain': 145,
-                    'rahmen_renn': 130,
+                    'laufradsatz_alpin': 170,  # vorher 180
+                    'laufradsatz_ampere': 200,  # vorher 220
+                    'laufradsatz_speed': 220,  # vorher 250
+                    'laufradsatz_standard': 140,  # vorher 150
+                    'rahmen_herren': 100,  # vorher 104
+                    'rahmen_damen': 100,  # vorher 107
+                    'rahmen_mountain': 135,  # vorher 145
+                    'rahmen_renn': 120,  # vorher 130
                     'lenker_comfort': 40,
                     'lenker_sport': 60,
                     'sattel_comfort': 50,
@@ -189,17 +189,18 @@ class BicycleSimulation:
             'bikeparts_pro': {
                 'payment_term': 30,
                 'delivery_time': 30,
-                'complaint_probability': 0.07,
-                'complaint_percentage': 0.15,
+                'complaint_probability': 0.06,  # vorher 0.07
+                'complaint_percentage': 0.12,  # vorher 0.15
                 'products': {
-                    'laufradsatz_alpin': 200,
-                    'laufradsatz_ampere': 240,
-                    'laufradsatz_speed': 280,
-                    'laufradsatz_standard': 170,
-                    'rahmen_herren': 115,
-                    'rahmen_damen': 120,
-                    'rahmen_mountain': 160,
-                    'rahmen_renn': 145,
+                    # Preise entsprechend angepasst für Premium-Zuschlag
+                    'laufradsatz_alpin': 190,  # vorher 200
+                    'laufradsatz_ampere': 220,  # vorher 240
+                    'laufradsatz_speed': 250,  # vorher 280
+                    'laufradsatz_standard': 160,  # vorher 170
+                    'rahmen_herren': 110,  # vorher 115
+                    'rahmen_damen': 110,  # vorher 120
+                    'rahmen_mountain': 150,  # vorher 160
+                    'rahmen_renn': 135,  # vorher 145
                     'lenker_comfort': 50,
                     'lenker_sport': 70,
                     'sattel_comfort': 60,
@@ -213,33 +214,34 @@ class BicycleSimulation:
             'radxpert': {
                 'payment_term': 30,
                 'delivery_time': 30,
-                'complaint_probability': 0.12,
-                'complaint_percentage': 0.25,
+                'complaint_probability': 0.10,  # vorher 0.12
+                'complaint_percentage': 0.22,  # vorher 0.25
                 'products': {
-                    'laufradsatz_alpin': 170,
-                    'laufradsatz_ampere': 210,
-                    'laufradsatz_speed': 230,
-                    'laufradsatz_standard': 140,
-                    'rahmen_herren': 95,
-                    'rahmen_damen': 100,
-                    'rahmen_mountain': 135,
-                    'rahmen_renn': 120
+                    'laufradsatz_alpin': 160,  # vorher 170
+                    'laufradsatz_ampere': 190,  # vorher 210
+                    'laufradsatz_speed': 210,  # vorher 230
+                    'laufradsatz_standard': 130,  # vorher 140
+                    'rahmen_herren': 90,  # vorher 95
+                    'rahmen_damen': 90,  # vorher 100
+                    'rahmen_mountain': 125,  # vorher 135
+                    'rahmen_renn': 110  # vorher 120
                 }
             },
             'cyclocomp': {
                 'payment_term': 30,
                 'delivery_time': 30,
-                'complaint_probability': 0.18,
-                'complaint_percentage': 0.3,
+                'complaint_probability': 0.15,  # vorher 0.18
+                'complaint_percentage': 0.25,  # vorher 0.3
                 'products': {
-                    'laufradsatz_alpin': 160,
-                    'laufradsatz_ampere': 200,
-                    'laufradsatz_speed': 220,
-                    'laufradsatz_standard': 130,
-                    'rahmen_herren': 90,
-                    'rahmen_damen': 95,
-                    'rahmen_mountain': 120,
-                    'rahmen_renn': 110,
+                    # Entsprechende Anpassungen für CycloComp
+                    'laufradsatz_alpin': 150,  # vorher 160
+                    'laufradsatz_ampere': 180,  # vorher 200
+                    'laufradsatz_speed': 200,  # vorher 220
+                    'laufradsatz_standard': 120,  # vorher 130
+                    'rahmen_herren': 85,  # vorher 90
+                    'rahmen_damen': 85,  # vorher 95
+                    'rahmen_mountain': 115,  # vorher 120
+                    'rahmen_renn': 100,  # vorher 110
                     'lenker_comfort': 30,
                     'lenker_sport': 45,
                     'sattel_comfort': 40,
@@ -253,8 +255,8 @@ class BicycleSimulation:
             'pedal_power_parts': {
                 'payment_term': 30,
                 'delivery_time': 30,
-                'complaint_probability': 0.105,
-                'complaint_percentage': 0.2,
+                'complaint_probability': 0.09,  # vorher 0.105
+                'complaint_percentage': 0.18,  # vorher 0.2
                 'products': {
                     'schaltung_albatross': 125,
                     'schaltung_gepard': 175,
@@ -265,8 +267,8 @@ class BicycleSimulation:
             'gearshift_wholesale': {
                 'payment_term': 30,
                 'delivery_time': 30,
-                'complaint_probability': 0.145,
-                'complaint_percentage': 0.27,
+                'complaint_probability': 0.12,  # vorher 0.145
+                'complaint_percentage': 0.22,  # vorher 0.27
                 'products': {
                     'lenker_comfort': 35,
                     'lenker_sport': 55,
@@ -286,8 +288,8 @@ class BicycleSimulation:
                 'sattel': 'sattel_sport',
                 'schaltung': 'schaltung_gepard',
                 'motor': None,
-                'skilled_hours': 0.5,
-                'unskilled_hours': 1.3
+                'skilled_hours': 0.4,  # vorher 0.5
+                'unskilled_hours': 1.2  # vorher 1.3
             },
             'herrenrad': {
                 'laufradsatz': 'laufradsatz_standard',
@@ -297,7 +299,7 @@ class BicycleSimulation:
                 'schaltung': 'schaltung_albatross',
                 'motor': None,
                 'skilled_hours': 0.3,
-                'unskilled_hours': 2.0
+                'unskilled_hours': 1.7  # vorher 2.0
             },
             'damenrad': {
                 'laufradsatz': 'laufradsatz_standard',
@@ -307,7 +309,7 @@ class BicycleSimulation:
                 'schaltung': 'schaltung_albatross',
                 'motor': None,
                 'skilled_hours': 0.3,
-                'unskilled_hours': 2.0
+                'unskilled_hours': 1.7  # vorher 2.0
             },
             'mountainbike': {
                 'laufradsatz': 'laufradsatz_alpin',
@@ -316,8 +318,8 @@ class BicycleSimulation:
                 'sattel': 'sattel_sport',
                 'schaltung': 'schaltung_gepard',
                 'motor': None,
-                'skilled_hours': 0.7,
-                'unskilled_hours': 1.3
+                'skilled_hours': 0.6,  # vorher 0.7
+                'unskilled_hours': 1.2  # vorher 1.3
             },
             'e_mountainbike': {
                 'laufradsatz': 'laufradsatz_alpin',
@@ -326,8 +328,8 @@ class BicycleSimulation:
                 'sattel': 'sattel_sport',
                 'schaltung': 'schaltung_gepard',
                 'motor': 'motor_standard',
-                'skilled_hours': 1.0,
-                'unskilled_hours': 1.5
+                'skilled_hours': 0.9,  # vorher 1.0
+                'unskilled_hours': 1.4  # vorher 1.5
             },
             'e_bike': {
                 'laufradsatz': 'laufradsatz_ampere',
@@ -336,8 +338,8 @@ class BicycleSimulation:
                 'sattel': 'sattel_comfort',
                 'schaltung': 'schaltung_albatross',
                 'motor': 'motor_standard',
-                'skilled_hours': 0.8,
-                'unskilled_hours': 1.5
+                'skilled_hours': 0.7,  # vorher 0.8
+                'unskilled_hours': 1.3  # vorher 1.5
             }
         }
 
