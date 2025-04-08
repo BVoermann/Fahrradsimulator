@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bicycle Factory Simulation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .header {
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .nav-tabs {
+            margin-bottom: 20px;
+        }
+        .tab-content {
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: 0;
+        }
+        .footer {
+            padding-top: 20px;
+            margin-top: 30px;
+            border-top: 1px solid #e5e5e5;
+            text-align: center;
+        }
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            width: 350px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="header d-flex justify-content-between align-items-center">
+            <h1>Bicycle Factory Simulation</h1>
+            <div>
+                <span class="fs-5 me-3">Month: {{ report.month }}/{{ report.year }}</span>
+                <span class="fs-5 me-3">Balance: {{ "€%.2f"|format(report.balance) }}</span>
+                <a href="/reset" class="btn btn-outline-danger">Reset Simulation</a>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Monthly Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <p><strong>Specialists:</strong> {{ report.staff.specialist }}</p>
+                                <p><strong>Helpers:</strong> {{ report.staff.helper }}</p>
+                                <p><strong>Revenue:</strong> {{ "€%.2f"|format(report.monthly_revenue) }}</p>
+                                <p><strong>Expenses:</strong> {{ "€%.2f"|format(report.monthly_expenses) }}</p>
+                                <p><strong>Profit:</strong> {{ "€%.2f"|format(report.monthly_profit) }}</p>
+                            </div>
+                            <div class="col-6">
+                                <p><strong>Pending Orders:</strong> {{ report.pending_orders }}</p>
+                                <p><strong>Active Loans:</strong> {{ report.active_loans }}</p>
+                                <p><strong>Quarter Revenue:</strong> {{ "€%.2f"|format(report.quarterly_revenue) }}</p>
+                                <p><strong>Quarter Expenses:</strong> {{ "€%.2f"|format(report.quarterly_expenses) }}</p>
+                                <p><strong>Quarter Profit:</strong> {{ "€%.2f"|format(report.quarterly_profit) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Inventory Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>Components</h6>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for component, quantity in report.inventory.items() %}
+                                <tr>
+                                    <td>{{ component }}</td>
+                                    <td>{{ quantity }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Produced Bikes</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>Budget</th>
+                                    <th>Standard</th>
+                                    <th>Premium</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for model, qualities in report.bikes.items() %}
+                                <tr>
+                                    <td>{{ model }}</td>
+                                    <td>{{ qualities.budget }}</td>
+                                    <td>{{ qualities.standard }}</td>
+                                    <td>{{ qualities.premium }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="monthForm">
+            <ul class="nav nav-tabs" id="mainTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="purchase-tab" data-bs-toggle="tab" data-bs-target="#purchase" type="button" role="tab" aria-controls="purchase" aria-selected="true">Purchase</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff" type="button" role="tab" aria-controls="staff" aria-selected="false">Staff</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="production-tab" data-bs-toggle="tab" data-bs-target="#production" type="button" role="tab" aria-controls="production" aria-selected="false">Production</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="market-tab" data-bs-toggle="tab" data-bs-target="#market" type="button" role="tab" aria-controls="market" aria-selected="false">Market</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="finance-tab" data-bs-toggle="tab" data-bs-target="#finance" type="button" role="tab" aria-controls="finance" aria-selected="false">Finance</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="market-info-tab" data-bs-toggle="tab" data-bs-target="#market-info" type="button" role="tab" aria-controls="market-info" aria-selected="false">Market Info</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="mainTabContent">
+                <!-- Purchase Tab -->
+                <div class="tab-pane fade show active" id="purchase" role="tabpanel" aria-labelledby="purchase-tab">
+                    <h4>Purchase Components</h4>
+                    
+                    <div class="accordion" id="suppliersAccordion">
+                        {% for supplier in suppliers %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{ supplier.id }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ supplier.id }}" aria-expanded="false" aria-controls="collapse{{ supplier.id }}">
+                                    {{ supplier.name }} - {{ supplier.description }} ({{ supplier.quality }} Quality)
+                                </button>
+                            </h2>
+                            <div id="collapse{{ supplier.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ supplier.id }}" data-bs-parent="#suppliersAccordion">
+                                <div class="accordion-body">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Component</th>
+                                                <th>Price</th>
+                                                <th>Quantity</th>
+                                                <th>Storage</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for component in supplier.components %}
+                                            <tr>
+                                                <td>{{ component.name }}</td>
+                                                <td>{{ "€%.2f"|format(component.price) }}</td>
+                                                <td>
+                                                    <input type="number" class="form-control" name="order_{{ supplier.id }}_{{ component.id }}" min="0" value="0">
+                                                </td>
+                                                <td>
+                                                    <select class="form-select" name="storage_{{ supplier.id }}_{{ component.id }}">
+                                                        {% for storage in storages %}
+                                                        <option value="{{ storage.id }}">{{ storage.name }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Staff Tab -->
+                <div class="tab-pane fade" id="staff" role="tabpanel" aria-labelledby="staff-tab">
+                    <h4>Manage Staff</h4>
+                    <p>Current Specialists: {{ report.staff.specialist }} | Current Helpers: {{ report.staff.helper }}</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Specialists</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="hireSpecialist" class="form-label">Hire Specialists</label>
+                                        <input type="number" class="form-control" id="hireSpecialist" name="hire_specialist" min="0" value="0">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="fireSpecialist" class="form-label">Fire Specialists</label>
+                                        <input type="number" class="form-control" id="fireSpecialist" name="fire_specialist" min="0" max="{{ report.staff.specialist }}" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Helpers</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="hireHelper" class="form-label">Hire Helpers</label>
+                                        <input type="number" class="form-control" id="hireHelper" name="hire_helper" min="0" value="0">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="fireHelper" class="form-label">Fire Helpers</label>
+                                        <input type="number" class="form-control" id="fireHelper" name="fire_helper" min="0" max="{{ report.staff.helper }}" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Production Tab -->
+                <div class="tab-pane fade" id="production" role="tabpanel" aria-labelledby="production-tab">
+                    <h4>Bicycle Production</h4>
+                    
+                    <div class="row">
+                        {% for model in models %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>{{ model.name }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Specialist Hours: {{ model.specialist_hours }} | Helper Hours: {{ model.helper_hours }}</p>
+                                    
+                                    <div class="accordion" id="production{{ model.id }}Accordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="productionHeading{{ model.id }}Budget">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#productionCollapse{{ model.id }}Budget" aria-expanded="false">
+                                                    Budget ({{ "€%.2f"|format(model.budget_price) }})
+                                                </button>
+                                            </h2>
+                                            <div id="productionCollapse{{ model.id }}Budget" class="accordion-collapse collapse" aria-labelledby="productionHeading{{ model.id }}Budget">
+                                                <div class="accordion-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Quantity</label>
+                                                        <input type="number" class="form-control" name="produce_{{ model.id }}_budget" min="0" value="0">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Storage</label>
+                                                        <select class="form-select" name="production_storage_{{ model.id }}_budget">
+                                                            {% for storage in storages %}
+                                                            <option value="{{ storage.id }}">{{ storage.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="productionHeading{{ model.id }}Standard">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#productionCollapse{{ model.id }}Standard" aria-expanded="false">
+                                                    Standard ({{ "€%.2f"|format(model.standard_price) }})
+                                                </button>
+                                            </h2>
+                                            <div id="productionCollapse{{ model.id }}Standard" class="accordion-collapse collapse" aria-labelledby="productionHeading{{ model.id }}Standard">
+                                                <div class="accordion-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Quantity</label>
+                                                        <input type="number" class="form-control" name="produce_{{ model.id }}_standard" min="0" value="0">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Storage</label>
+                                                        <select class="form-select" name="production_storage_{{ model.id }}_standard">
+                                                            {% for storage in storages %}
+                                                            <option value="{{ storage.id }}">{{ storage.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="productionHeading{{ model.id }}Premium">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#productionCollapse{{ model.id }}Premium" aria-expanded="false">
+                                                    Premium ({{ "€%.2f"|format(model.premium_price) }})
+                                                </button>
+                                            </h2>
+                                            <div id="productionCollapse{{ model.id }}Premium" class="accordion-collapse collapse" aria-labelledby="productionHeading{{ model.id }}Premium">
+                                                <div class="accordion-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Quantity</label>
+                                                        <input type="number" class="form-control" name="produce_{{ model.id }}_premium" min="0" value="0">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Storage</label>
+                                                        <select class="form-select" name="production_storage_{{ model.id }}_premium">
+                                                            {% for storage in storages %}
+                                                            <option value="{{ storage.id }}">{{ storage.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                
