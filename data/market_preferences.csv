@@ -1,0 +1,13 @@
+market,bicycle_type,preference
+muenster,herrenrad,0.35
+muenster,damenrad,0.35
+muenster,e_bike,0.20
+muenster,rennrad,0.03
+muenster,mountainbike,0.03
+muenster,e_mountainbike,0.04
+toulouse,rennrad,0.35
+toulouse,mountainbike,0.30
+toulouse,e_mountainbike,0.25
+toulouse,herrenrad,0.03
+toulouse,damenrad,0.03
+toulouse,e_bike,0.04 

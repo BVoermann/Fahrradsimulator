@@ -1,0 +1,4 @@
+loan_type,interest_rate,term_months,max_percentage_of_balance
+short_term,0.10,3,0.25
+medium_term,0.08,6,0.25
+long_term,0.06,12,0.25 

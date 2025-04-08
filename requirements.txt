@@ -1,4 +1,5 @@
-Flask==2.2.3
-pandas==1.5.3
-Werkzeug==2.2.3
-jinja2==3.1.2
+streamlit==1.32.0
+pandas==2.2.1
+numpy==1.26.4
+plotly==5.19.0
+openpyxl==3.1.2 
