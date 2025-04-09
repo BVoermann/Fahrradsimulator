@@ -99,36 +99,43 @@ class BicycleSimulation:
             for _, recipe in self.bicycle_recipes.iterrows():
                 bicycle_type = recipe['bicycle_type']
                 quality_level = recipe['quality_level']
+                bicycle_key = f"{bicycle_type}_{quality_level}"
                 
                 # Calculate demand
                 demand = self.calculate_monthly_demand(market, bicycle_type)
                 
                 # Get available stock
-                available_stock = self.market_stock[market].get(bicycle_type, 0)
+                available_stock = self.market_stock[market].get(bicycle_key, 0)
                 
                 # Calculate actual sales
                 actual_sales = min(demand, available_stock)
                 
-                # Update market stock
-                self.market_stock[market][bicycle_type] -= actual_sales
-                
-                # Calculate revenue
-                revenue = actual_sales * recipe['base_price']
-                monthly_revenue += revenue
-                
-                # Record sales
-                monthly_sales[market][bicycle_type] = {
-                    'demand': demand,
-                    'sales': actual_sales,
-                    'revenue': revenue
-                }
+                if actual_sales > 0:
+                    # Update market stock
+                    self.market_stock[market][bicycle_key] -= actual_sales
+                    
+                    # Calculate revenue
+                    revenue = actual_sales * recipe['base_price']
+                    monthly_revenue += revenue
+                    
+                    # Record sales
+                    if bicycle_type not in monthly_sales[market]:
+                        monthly_sales[market][bicycle_type] = {
+                            'demand': 0,
+                            'sales': 0,
+                            'revenue': 0
+                        }
+                    monthly_sales[market][bicycle_type]['demand'] += demand
+                    monthly_sales[market][bicycle_type]['sales'] += actual_sales
+                    monthly_sales[market][bicycle_type]['revenue'] += revenue
         
         # Record revenue
-        self.revenues.append({
-            'month': self.current_month,
-            'year': self.current_year,
-            'amount': monthly_revenue
-        })
+        if monthly_revenue > 0:
+            self.revenues.append({
+                'month': self.current_month,
+                'year': self.current_year,
+                'amount': monthly_revenue
+            })
         
         return monthly_sales, monthly_revenue
         
@@ -256,6 +263,7 @@ class BicycleSimulation:
         """Produce bicycles according to the production plan."""
         produced_bicycles = {}
         total_cost = 0
+        production_errors = []
         
         for bicycle_type, quantities in production_plan.items():
             for quality_level, quantity in quantities.items():
@@ -269,7 +277,7 @@ class BicycleSimulation:
                 ].iloc[0]
                 
                 # Check if we have enough materials
-                can_produce = True
+                missing_materials = []
                 required_parts = {
                     'laufradsatz': recipe['laufradsatz'],
                     'lenker': recipe['lenker'],
@@ -284,10 +292,10 @@ class BicycleSimulation:
                 # Check inventory
                 for part, part_type in required_parts.items():
                     if part_type and self.inventory['germany'].get(part_type, 0) < quantity:
-                        can_produce = False
-                        break
+                        missing_materials.append(f"{part_type} (need {quantity}, have {self.inventory['germany'].get(part_type, 0)})")
                         
-                if not can_produce:
+                if missing_materials:
+                    production_errors.append(f"Not enough materials for {bicycle_type} {quality_level}: {', '.join(missing_materials)}")
                     continue
                     
                 # Calculate worker hours needed
@@ -299,6 +307,8 @@ class BicycleSimulation:
                 available_unskilled_hours = self.workers_count['unskilled'] * 150
                 
                 if skilled_hours_needed > available_skilled_hours or unskilled_hours_needed > available_unskilled_hours:
+                    production_errors.append(f"Not enough worker hours for {bicycle_type} {quality_level}: "
+                                          f"need {skilled_hours_needed} skilled and {unskilled_hours_needed} unskilled hours")
                     continue
                     
                 # Produce bicycles
@@ -338,7 +348,8 @@ class BicycleSimulation:
             
         return {
             'produced': produced_bicycles,
-            'cost': total_cost
+            'cost': total_cost,
+            'errors': production_errors
         }
         
     def transfer_inventory(self, transfers: Dict[str, Dict[str, int]]) -> None:
@@ -372,38 +383,42 @@ class BicycleSimulation:
             })
             self.balance -= transfer_cost
             
-    def distribute_to_markets(self, distribution: Dict[str, Dict[str, Dict[str, int]]]) -> None:
+    def distribute_to_markets(self, distribution: Dict[str, Dict[str, Dict[str, Dict[str, int]]]]) -> None:
         """Distribute bicycles to markets."""
         distribution_cost = 0
         
         for source, markets in distribution.items():
             for market, quantities in markets.items():
-                for bicycle_type, quantity in quantities.items():
-                    if quantity <= 0:
-                        continue
+                for bicycle_type, quality_levels in quantities.items():
+                    for quality_level, quantity in quality_levels.items():
+                        if quantity <= 0:
+                            continue
+                            
+                        # Check if we have enough inventory for this quality level
+                        bicycle_key = f"{bicycle_type}_{quality_level}"
+                        available_quantity = self.inventory[source].get(bicycle_key, 0)
                         
-                    # Check if we have enough inventory
-                    if self.inventory[source].get(bicycle_type, 0) < quantity:
-                        continue
+                        if available_quantity < quantity:
+                            continue
+                            
+                        # Get market data
+                        market_data = self.markets[self.markets['name'] == market].iloc[0]
                         
-                    # Get market data
-                    market_data = self.markets[self.markets['name'] == market].iloc[0]
-                    
-                    # Calculate transport cost
-                    if source == 'germany' and market_data['country'] == 'germany':
-                        cost = market_data['transport_cost']
-                    elif source == 'france' and market_data['country'] == 'france':
-                        cost = market_data['transport_cost']
-                    else:
-                        cost = market_data['transport_cost'] * 2
+                        # Calculate transport cost
+                        if source == 'germany' and market_data['country'] == 'germany':
+                            cost = market_data['transport_cost']
+                        elif source == 'france' and market_data['country'] == 'france':
+                            cost = market_data['transport_cost']
+                        else:
+                            cost = market_data['transport_cost'] * 2
+                            
+                        # Transfer to market
+                        self.inventory[source][bicycle_key] -= quantity
+                        self.market_stock[market][bicycle_key] = self.market_stock[market].get(bicycle_key, 0) + quantity
                         
-                    # Transfer to market
-                    self.inventory[source][bicycle_type] -= quantity
-                    self.market_stock[market][bicycle_type] = self.market_stock[market].get(bicycle_type, 0) + quantity
-                    
-                    # Add distribution cost
-                    distribution_cost += cost * quantity
-                    
+                        # Add distribution cost
+                        distribution_cost += cost * quantity
+                        
         # Record distribution cost
         if distribution_cost > 0:
             self.expenses.append({
