@@ -7,6 +7,7 @@ import zipfile
 import io
 import tempfile
 import shutil
+import csv
 
 # Set page config
 st.set_page_config(
@@ -25,7 +26,9 @@ REQUIRED_FILES = [
     'seasonal_factors.csv',
     'workers.csv',
     'storage.csv',
-    'loans.csv'
+    'loans.csv',
+    'material_categories.csv',
+    'configuration.csv'
 ]
 
 # Initialize session state
@@ -67,6 +70,126 @@ def process_uploaded_files(uploaded_file):
         st.error(f"Error processing files: {str(e)}")
         return False
 
+def create_default_zip_file():
+    """Create a zip file with default CSV files for the simulation."""
+    # Create a BytesIO object to store the zip file
+    zip_buffer = io.BytesIO()
+    
+    # Sample data for each required CSV file
+    default_data = {
+        'suppliers.csv': [
+            ['name', 'country', 'reliability', 'delivery_time', 'complaint_probability', 'complaint_percentage'],
+            ['GermanSupplier', 'germany', '0.95', '5', '0.05', '0.1'],
+            ['FrenchSupplier', 'france', '0.9', '7', '0.1', '0.15'],
+            ['ChineseSupplier', 'china', '0.8', '14', '0.2', '0.25']
+        ],
+        'supplier_products.csv': [
+            ['supplier', 'product', 'price', 'min_order'],
+            ['GermanSupplier', 'Laufradsatz Standard', '50', '10'],
+            ['GermanSupplier', 'Rahmen Standard', '100', '5'],
+            ['FrenchSupplier', 'Lenker Standard', '30', '15'],
+            ['FrenchSupplier', 'Sattel Standard', '25', '20'],
+            ['ChineseSupplier', 'Schaltung Standard', '40', '30'],
+            ['ChineseSupplier', 'Motor Standard', '120', '5']
+        ],
+        'bicycle_recipes.csv': [
+            ['bicycle_type', 'quality_level', 'laufradsatz', 'rahmen', 'lenker', 'sattel', 'schaltung', 'motor', 'base_price', 'skilled_hours', 'unskilled_hours'],
+            ['city', 'standard', 'Laufradsatz Standard', 'Rahmen Standard', 'Lenker Standard', 'Sattel Standard', 'Schaltung Standard', '', '300', '1', '2'],
+            ['ebike', 'standard', 'Laufradsatz Standard', 'Rahmen Standard', 'Lenker Standard', 'Sattel Standard', 'Schaltung Standard', 'Motor Standard', '800', '2', '3']
+        ],
+        'markets.csv': [
+            ['name', 'country', 'market_size', 'competition', 'transport_cost'],
+            ['Berlin', 'germany', '1000000', '0.7', '10'],
+            ['Munich', 'germany', '800000', '0.6', '15'],
+            ['Paris', 'france', '1200000', '0.8', '10'],
+            ['Lyon', 'france', '600000', '0.5', '12']
+        ],
+        'market_preferences.csv': [
+            ['market', 'bicycle_type', 'preference'],
+            ['Berlin', 'city', '0.6'],
+            ['Berlin', 'ebike', '0.4'],
+            ['Munich', 'city', '0.5'],
+            ['Munich', 'ebike', '0.5'],
+            ['Paris', 'city', '0.7'],
+            ['Paris', 'ebike', '0.3'],
+            ['Lyon', 'city', '0.6'],
+            ['Lyon', 'ebike', '0.4']
+        ],
+        'seasonal_factors.csv': [
+            ['month', 'bicycle_type', 'demand_multiplier'],
+            ['1', 'city', '0.5'],
+            ['1', 'ebike', '0.4'],
+            ['2', 'city', '0.6'],
+            ['2', 'ebike', '0.5'],
+            ['3', 'city', '0.8'],
+            ['3', 'ebike', '0.7'],
+            ['4', 'city', '1.0'],
+            ['4', 'ebike', '0.9'],
+            ['5', 'city', '1.2'],
+            ['5', 'ebike', '1.1'],
+            ['6', 'city', '1.3'],
+            ['6', 'ebike', '1.2'],
+            ['7', 'city', '1.2'],
+            ['7', 'ebike', '1.1'],
+            ['8', 'city', '1.1'],
+            ['8', 'ebike', '1.0'],
+            ['9', 'city', '1.0'],
+            ['9', 'ebike', '0.9'],
+            ['10', 'city', '0.8'],
+            ['10', 'ebike', '0.7'],
+            ['11', 'city', '0.6'],
+            ['11', 'ebike', '0.5'],
+            ['12', 'city', '0.7'],
+            ['12', 'ebike', '0.6']
+        ],
+        'workers.csv': [
+            ['type', 'salary', 'productivity', 'monthly_salary', 'hourly_rate'],
+            ['skilled', '3000', '5', '3000', '20'],
+            ['unskilled', '1800', '3', '1800', '12']
+        ],
+        'storage.csv': [
+            ['location', 'capacity', 'cost', 'country', 'transfer_cost', 'quarterly_rent'],
+            ['germany', '1000', '5000', 'germany', '100', '2000'],
+            ['france', '800', '4000', 'france', '120', '1800']
+        ],
+        'loans.csv': [
+            ['amount', 'interest_rate', 'duration'],
+            ['50000', '0.05', '12'],
+            ['100000', '0.04', '24'],
+            ['200000', '0.035', '36']
+        ],
+        'material_categories.csv': [
+            ['category_name', 'search_term'],
+            ['Laufradsatz', 'laufradsatz'],
+            ['Lenker', 'lenker'],
+            ['Rahmen', 'rahmen'],
+            ['Sattel', 'sattel'],
+            ['Schaltung', 'schaltung'],
+            ['Motor', 'motor'],
+            ['Other', '']
+        ],
+        'configuration.csv': [
+            ['starting_month', 'starting_year', 'starting_balance', 'starting_skilled_count', 'starting_unskilled_count'],
+            ['1', '2024', '80000', '1', '2']
+        ]
+    }
+    
+    # Create a zip file
+    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+        for filename, data in default_data.items():
+            # Create a temporary file
+            temp_file = io.StringIO()
+            writer = csv.writer(temp_file)
+            for row in data:
+                writer.writerow(row)
+                
+            # Add to zip
+            zip_file.writestr(filename, temp_file.getvalue())
+    
+    # Reset buffer position
+    zip_buffer.seek(0)
+    return zip_buffer
+
 # Sidebar
 st.sidebar.title("Navigation")
 if st.session_state.simulation is None:
@@ -95,7 +218,21 @@ if page == "Upload Files":
     st.title("Bicycle Business Simulation")
     st.write("Please upload a zip file containing all required CSV files to start the simulation.")
     
-    st.write("Required files:")
+    # Add download button for default files
+    st.write("### Get Started Quickly")
+    st.write("Download a default zip file with sample CSV files to get started:")
+    
+    default_zip = create_default_zip_file()
+    st.download_button(
+        label="⬇️ Download Sample Data Files",
+        data=default_zip,
+        file_name="bicycle_simulation_data.zip",
+        mime="application/zip",
+        help="This will download a zip file with sample CSV files that you can use to start the simulation."
+    )
+    
+    st.write("### Upload Your Files")
+    st.write("Or upload your own zip file with the following required files:")
     for file in REQUIRED_FILES:
         st.write(f"- {file}")
         
@@ -162,25 +299,29 @@ elif page == "Production":
                 st.session_state.simulation.supplier_products['supplier'] == selected_supplier
             ]
             
-            # Group materials by type
-            material_types = {'Laufradsatz': [], 'Lenker': [], 'Rahmen': [], 'Sattel': [], 'Schaltung': [], 'Motor': [], 'Other': []}
+            # Group materials by category using the material_categories.csv file
+            material_categories = st.session_state.simulation.material_categories
             
+            # Initialize categories dictionary with empty lists for each category
+            material_types = {}
+            for _, category in material_categories.iterrows():
+                material_types[category['category_name']] = []
+            
+            # Categorize products based on the category definitions
             for _, product in supplier_products.iterrows():
-                product_name = product['product']
-                # Try to determine the category by looking at the product name
-                if 'laufradsatz' in product_name.lower():
-                    material_types['Laufradsatz'].append(product)
-                elif 'lenker' in product_name.lower():
-                    material_types['Lenker'].append(product)
-                elif 'rahmen' in product_name.lower():
-                    material_types['Rahmen'].append(product)
-                elif 'sattel' in product_name.lower():
-                    material_types['Sattel'].append(product)
-                elif 'schaltung' in product_name.lower():
-                    material_types['Schaltung'].append(product)
-                elif 'motor' in product_name.lower():
-                    material_types['Motor'].append(product)
-                else:
+                product_name = product['product'].lower()
+                categorized = False
+                
+                # Check each category's search term
+                for _, category in material_categories.iterrows():
+                    search_term = category['search_term'].lower()
+                    if search_term and search_term in product_name:
+                        material_types[category['category_name']].append(product)
+                        categorized = True
+                        break
+                
+                # If not categorized, put in 'Other'
+                if not categorized:
                     material_types['Other'].append(product)
             
             order = {}
@@ -293,20 +434,22 @@ elif page == "Production":
 elif page == "Inventory":
     st.title("Inventory Management")
     
-    # Display inventory
-    col1, col2 = st.columns(2)
-    with col1:
-        display_inventory(st.session_state.simulation.inventory, 'germany')
-    with col2:
-        display_inventory(st.session_state.simulation.inventory, 'france')
+    # Get available storage locations from storage.csv
+    storage_locations = st.session_state.simulation.storage['location'].tolist()
+    
+    # Display inventory for each location
+    cols = st.columns(len(storage_locations))
+    for i, location in enumerate(storage_locations):
+        with cols[i]:
+            display_inventory(st.session_state.simulation.inventory, location)
         
     # Transfer inventory
     st.subheader("Transfer Inventory")
     col1, col2 = st.columns(2)
     with col1:
-        source = st.selectbox("From", ['germany', 'france'])
+        source = st.selectbox("From", storage_locations)
     with col2:
-        target = st.selectbox("To", ['germany', 'france'])
+        target = st.selectbox("To", storage_locations)
         
     if source != target:
         items = list(st.session_state.simulation.inventory[source].keys())
@@ -337,8 +480,9 @@ elif page == "Market":
     
     # Display market stock
     st.subheader("Market Stock")
-    tabs = st.tabs([market for market in st.session_state.simulation.markets['name']])
-    for i, market in enumerate(st.session_state.simulation.markets['name']):
+    market_names = st.session_state.simulation.markets['name'].tolist()
+    tabs = st.tabs(market_names)
+    for i, market in enumerate(market_names):
         with tabs[i]:
             market_stock = []
             for bicycle_key, quantity in st.session_state.simulation.market_stock[market].items():
@@ -357,7 +501,10 @@ elif page == "Market":
             
     # Distribute to markets
     st.subheader("Distribute to Markets")
-    source = st.selectbox("From Warehouse", ['germany', 'france'])
+    
+    # Get available storage locations from storage.csv
+    storage_locations = st.session_state.simulation.storage['location'].tolist()
+    source = st.selectbox("From Warehouse", storage_locations)
     
     # Get available bicycles from inventory
     available_bicycles = {}
@@ -372,9 +519,9 @@ elif page == "Market":
         distribution = {}
         
         # Create tabs for markets
-        market_tabs = st.tabs([market for market in st.session_state.simulation.markets['name']])
+        market_tabs = st.tabs(market_names)
         
-        for i, market in enumerate(st.session_state.simulation.markets['name']):
+        for i, market in enumerate(market_names):
             with market_tabs[i]:
                 st.write(f"**{market}**")
                 market_distribution = {}

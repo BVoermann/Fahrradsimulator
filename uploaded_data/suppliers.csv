@@ -1,7 +1,4 @@
-name,payment_term,delivery_time,complaint_probability,complaint_percentage,quality_level
-velotech_supplies,30,30,0.08,0.15,standard
-bikeparts_pro,30,30,0.06,0.12,premium
-radxpert,30,30,0.10,0.22,standard
-cyclocomp,30,30,0.15,0.25,basic
-pedal_power_parts,30,30,0.09,0.18,standard
-gearshift_wholesale,30,30,0.12,0.22,standard 
+name,country,reliability,delivery_time,complaint_probability,complaint_percentage
+GermanSupplier,germany,0.95,5,0.05,0.1
+FrenchSupplier,france,0.9,7,0.1,0.15
+ChineseSupplier,china,0.8,14,0.2,0.25

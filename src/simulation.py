@@ -36,30 +36,43 @@ class BicycleSimulation:
         # Load loans
         self.loans = pd.read_csv(os.path.join(self.data_dir, "loans.csv"))
         
+        # Load material categories
+        self.material_categories = pd.read_csv(os.path.join(self.data_dir, "material_categories.csv"))
+        
+        # Load simulation configuration
+        self.config = pd.read_csv(os.path.join(self.data_dir, "configuration.csv"))
+        
     def initialize_state(self):
         """Initialize the simulation state."""
-        self.current_month = 1
-        self.current_year = 2024
-        self.balance = 80000.0
+        # Set starting date and balance from configuration
+        config_row = self.config.iloc[0]
+        self.current_month = config_row['starting_month']
+        self.current_year = config_row['starting_year']
+        self.balance = config_row['starting_balance']
         
-        # Initialize inventory
-        self.inventory = {
-            'germany': {},
-            'france': {}
-        }
+        # Initialize inventory for each location from storage.csv
+        self.inventory = {}
+        for _, location in self.storage.iterrows():
+            self.inventory[location['location']] = {}
         
-        # Initialize workers
-        self.workers_count = {
-            'skilled': 1,
-            'unskilled': 2
-        }
+        # Initialize workers based on types in workers.csv
+        self.workers_count = {}
+        for _, worker_type in self.workers.iterrows():
+            # Use default worker counts from configuration
+            worker_count_col = f"starting_{worker_type['type']}_count"
+            if worker_count_col in self.config.columns:
+                count = config_row[worker_count_col]
+            else:
+                count = 1  # Default to 1 if not specified
+            self.workers_count[worker_type['type']] = count
         
         # Initialize market stock
         self.market_stock = {}
         for market in self.markets['name']:
             self.market_stock[market] = {}
             for _, recipe in self.bicycle_recipes.iterrows():
-                self.market_stock[market][recipe['bicycle_type']] = 0
+                bicycle_key = f"{recipe['bicycle_type']}_{recipe['quality_level']}"
+                self.market_stock[market][bicycle_key] = 0
                 
         # Initialize loans
         self.active_loans = []
@@ -166,7 +179,7 @@ class BicycleSimulation:
         
         # Worker salaries
         for worker_type, count in self.workers_count.items():
-            salary = self.workers[self.workers['worker_type'] == worker_type]['monthly_salary'].iloc[0]
+            salary = self.workers[self.workers['type'] == worker_type]['monthly_salary'].iloc[0]
             total_expenses += count * salary
             
         # Storage costs (quarterly)
@@ -204,6 +217,9 @@ class BicycleSimulation:
         purchased_items = {}
         defect_items = {}
         
+        # Get default storage location (first location in storage.csv)
+        default_location = self.storage['location'].iloc[0]
+        
         for supplier, items in order.items():
             if supplier not in self.suppliers['name'].values:
                 raise ValueError(f"Unknown supplier: {supplier}")
@@ -240,8 +256,8 @@ class BicycleSimulation:
                     if quantity > 0:
                         total_cost += cost
                         purchased_items[item] = purchased_items.get(item, 0) + quantity
-                        # Add to Germany warehouse by default
-                        self.inventory['germany'][item] = self.inventory['germany'].get(item, 0) + quantity
+                        # Add to default warehouse location
+                        self.inventory[default_location][item] = self.inventory[default_location].get(item, 0) + quantity
                         
         # Subtract costs from balance
         self.balance -= total_cost
@@ -264,6 +280,9 @@ class BicycleSimulation:
         produced_bicycles = {}
         total_cost = 0
         production_errors = []
+        
+        # Get default production location (first location in storage.csv)
+        production_location = self.storage['location'].iloc[0]
         
         for bicycle_type, quantities in production_plan.items():
             for quality_level, quantity in quantities.items():
@@ -291,8 +310,8 @@ class BicycleSimulation:
                     
                 # Check inventory
                 for part, part_type in required_parts.items():
-                    if part_type and self.inventory['germany'].get(part_type, 0) < quantity:
-                        missing_materials.append(f"{part_type} (need {quantity}, have {self.inventory['germany'].get(part_type, 0)})")
+                    if part_type and self.inventory[production_location].get(part_type, 0) < quantity:
+                        missing_materials.append(f"{part_type} (need {quantity}, have {self.inventory[production_location].get(part_type, 0)})")
                         
                 if missing_materials:
                     production_errors.append(f"Not enough materials for {bicycle_type} {quality_level}: {', '.join(missing_materials)}")
@@ -314,11 +333,11 @@ class BicycleSimulation:
                 # Produce bicycles
                 for part, part_type in required_parts.items():
                     if part_type:
-                        self.inventory['germany'][part_type] -= quantity
+                        self.inventory[production_location][part_type] -= quantity
                         
                 # Add to inventory
                 bicycle_key = f"{bicycle_type}_{quality_level}"
-                self.inventory['germany'][bicycle_key] = self.inventory['germany'].get(bicycle_key, 0) + quantity
+                self.inventory[production_location][bicycle_key] = self.inventory[production_location].get(bicycle_key, 0) + quantity
                 
                 # Calculate production cost
                 material_cost = sum([
@@ -328,8 +347,8 @@ class BicycleSimulation:
                 ]) * quantity
                 
                 labor_cost = (
-                    skilled_hours_needed * self.workers[self.workers['worker_type'] == 'skilled']['hourly_rate'].iloc[0] +
-                    unskilled_hours_needed * self.workers[self.workers['worker_type'] == 'unskilled']['hourly_rate'].iloc[0]
+                    skilled_hours_needed * self.workers[self.workers['type'] == 'skilled']['hourly_rate'].iloc[0] +
+                    unskilled_hours_needed * self.workers[self.workers['type'] == 'unskilled']['hourly_rate'].iloc[0]
                 )
                 
                 total_cost += material_cost + labor_cost
@@ -388,6 +407,9 @@ class BicycleSimulation:
         distribution_cost = 0
         
         for source, markets in distribution.items():
+            # Get source country
+            source_country = self.storage[self.storage['location'] == source]['country'].iloc[0] if source in self.storage['location'].values else 'unknown'
+            
             for market, quantities in markets.items():
                 for bicycle_type, quality_levels in quantities.items():
                     for quality_level, quantity in quality_levels.items():
@@ -405,11 +427,11 @@ class BicycleSimulation:
                         market_data = self.markets[self.markets['name'] == market].iloc[0]
                         
                         # Calculate transport cost
-                        if source == 'germany' and market_data['country'] == 'germany':
-                            cost = market_data['transport_cost']
-                        elif source == 'france' and market_data['country'] == 'france':
+                        if source_country == market_data['country']:
+                            # Domestic shipping
                             cost = market_data['transport_cost']
                         else:
+                            # International shipping
                             cost = market_data['transport_cost'] * 2
                             
                         # Transfer to market

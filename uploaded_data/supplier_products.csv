@@ -1,65 +1,7 @@
-supplier,product,price
-velotech_supplies,laufradsatz_alpin,170
-velotech_supplies,laufradsatz_ampere,200
-velotech_supplies,laufradsatz_speed,220
-velotech_supplies,laufradsatz_standard,140
-velotech_supplies,rahmen_herren,100
-velotech_supplies,rahmen_damen,100
-velotech_supplies,rahmen_mountain,135
-velotech_supplies,rahmen_renn,120
-velotech_supplies,lenker_comfort,40
-velotech_supplies,lenker_sport,60
-velotech_supplies,sattel_comfort,50
-velotech_supplies,sattel_sport,70
-velotech_supplies,schaltung_albatross,130
-velotech_supplies,schaltung_gepard,180
-velotech_supplies,motor_standard,400
-velotech_supplies,motor_mountain,600
-bikeparts_pro,laufradsatz_alpin,210
-bikeparts_pro,laufradsatz_ampere,250
-bikeparts_pro,laufradsatz_speed,290
-bikeparts_pro,laufradsatz_standard,180
-bikeparts_pro,rahmen_herren,125
-bikeparts_pro,rahmen_damen,130
-bikeparts_pro,rahmen_mountain,170
-bikeparts_pro,rahmen_renn,155
-bikeparts_pro,lenker_comfort,50
-bikeparts_pro,lenker_sport,70
-bikeparts_pro,sattel_comfort,60
-bikeparts_pro,sattel_sport,80
-bikeparts_pro,schaltung_albatross,150
-bikeparts_pro,schaltung_gepard,200
-bikeparts_pro,motor_standard,450
-bikeparts_pro,motor_mountain,650
-radxpert,laufradsatz_alpin,160
-radxpert,laufradsatz_ampere,190
-radxpert,laufradsatz_speed,210
-radxpert,laufradsatz_standard,130
-radxpert,rahmen_herren,90
-radxpert,rahmen_damen,90
-radxpert,rahmen_mountain,125
-radxpert,rahmen_renn,110
-cyclocomp,laufradsatz_alpin,150
-cyclocomp,laufradsatz_ampere,190
-cyclocomp,laufradsatz_speed,210
-cyclocomp,laufradsatz_standard,120
-cyclocomp,rahmen_herren,90
-cyclocomp,rahmen_damen,95
-cyclocomp,rahmen_mountain,110
-cyclocomp,rahmen_renn,100
-cyclocomp,lenker_comfort,30
-cyclocomp,lenker_sport,45
-cyclocomp,sattel_comfort,40
-cyclocomp,sattel_sport,55
-cyclocomp,schaltung_albatross,110
-cyclocomp,schaltung_gepard,150
-cyclocomp,motor_standard,350
-cyclocomp,motor_mountain,500
-pedal_power_parts,schaltung_albatross,125
-pedal_power_parts,schaltung_gepard,175
-pedal_power_parts,motor_standard,390
-pedal_power_parts,motor_mountain,580
-gearshift_wholesale,lenker_comfort,35
-gearshift_wholesale,lenker_sport,55
-gearshift_wholesale,sattel_comfort,45
-gearshift_wholesale,sattel_sport,65 
+supplier,product,price,min_order
+GermanSupplier,Laufradsatz Standard,50,10
+GermanSupplier,Rahmen Standard,100,5
+FrenchSupplier,Lenker Standard,30,15
+FrenchSupplier,Sattel Standard,25,20
+ChineseSupplier,Schaltung Standard,40,30
+ChineseSupplier,Motor Standard,120,5

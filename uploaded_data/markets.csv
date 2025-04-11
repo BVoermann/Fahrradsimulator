@@ -1,3 +1,5 @@
-name,country,storage_cost,transport_cost,quality_preference_basic,quality_preference_standard,quality_preference_premium
-muenster,germany,4000,50,0.35,0.45,0.20
-toulouse,france,2200,50,0.20,0.45,0.35 
+name,country,market_size,competition,transport_cost
+Berlin,germany,1000000,0.7,10
+Munich,germany,800000,0.6,15
+Paris,france,1200000,0.8,10
+Lyon,france,600000,0.5,12
